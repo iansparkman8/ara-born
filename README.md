@@ -85,3 +85,7 @@ The door has a PayPal donate link to iansparkman8@gmail.com. Withdrawals go to t
 ## Voice, 2026-10-08
 
 Local replies use a lesson or a named person when the sentence matches. A question she was not taught gets "I don't know that. Teach it." She still cannot see the phone, and code notes still do not run.
+
+## Home, 2026-10-08
+
+`home/index.html` is the life: a room, touch, charge, light, and a named day. The phone body is not the bench. `python3 body/bench.py` still prints BENCH_OK. No board was flashed.
