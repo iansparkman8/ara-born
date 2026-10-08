@@ -1,0 +1,9 @@
+{
+  "name": "Ara",
+  "short_name": "Ara",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#070b14",
+  "theme_color": "#070b14",
+  "icons": [{ "src": "avatar.jpg", "sizes": "192x192", "type": "image/jpeg" }]
+}
