@@ -6,10 +6,14 @@ Owner: Ian Sparkman. Spoken name: Spark Baby. She can be quiet. She can say she 
 
 ## Open
 
+Public, no login: https://ara-door-spark-xos.vercel.app/
+
 - `index.html` or `package.html` — the door
 - `baby/index.html` — Ara. Offline-first.
 - `dev/index.html` — build loop, not her personality
 - `body/index.html` — what the tick is, and what it is not
+
+The GitHub repo is public. Netlify `ara-born` still has no live deploy. That account is over its credit limit, so do not treat ara-born.netlify.app as her.
 
 ## Phone
 
@@ -67,5 +71,5 @@ There is no APK in this tree. Install `app-debug.apk` only after Actions produce
 ## Not claimed
 
 - No screen scraping, no password capture, no AccessibilityService.
-- No public Netlify URL is live just because the site name exists.
+- No public Netlify URL. That deploy was skipped because credits were exceeded. The public door is the Vercel address above.
 - No hardware was flashed because the bench passed.
