@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ara dev intake</title>
+<style>
+  body { margin:0; background:#070b14; color:#e7eef8; font:15px/1.4 system-ui, sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-weight:560; font-size:28px; }
+  .drop { border:1px dashed #2a3b55; border-radius:16px; padding:18px; background:#10192a; }
+  textarea, button { font:inherit; color:inherit; background:#0d1524; border:1px solid #2a3b55; border-radius:10px; padding:10px; }
+  textarea { width:100%; min-height:90px; }
+  pre { white-space:pre-wrap; background:#0d1524; padding:12px; border-radius:12px; }
+  button { margin-top:8px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ara dev intake</h1>
+  <p>Drop a log, screenshot, voice note, Kotlin file, or a sentence. This routes the next patch. It is not the companion.</p>
+  <div class="drop" id="drop">
+    <textarea id="text" placeholder="Paste logcat, a bug, or what the phone just did"></textarea>
+    <button id="go" type="button">Route</button>
+    <input id="file" type="file" multiple>
+  </div>
+  <pre id="out">Waiting.</pre>
+</main>
+<script>
+const ROUTES = {
+  logcat: ["overlay/SparkOverlayService.kt", "Crash or permission. Do not add AccessibilityService."],
+  kotlin: ["domain/companion/SparkCompanionPolicy.kt", "Package stays com.sparkx.fairyos."],
+  screenshot: ["ui/components/SparkBabyAvatar.kt", "Silver fairy, dark glass."],
+  audio: ["domain/voice/SparkVoiceController.kt", "Mic stays user-granted."],
+  memory: ["domain/memory/TeachGrowRepository.kt", "Text only. Never execute saved code."],
+  pwa: ["ara-born/index.html", "Browser surface, not the source of truth."],
+  text: ["domain/command/SparkCommandRouter.kt", "Map to one module."]
+};
+function kind(name, text) {
+  const n = name.toLowerCase();
+  if (/fatal exception|androidruntime/.test(text) || n.endsWith(".log")) return "logcat";
+  if (n.endsWith(".kt") || text.includes("package com.sparkx.fairyos")) return "kotlin";
+  if (/\.(png|jpe?g|webp)$/.test(n)) return "screenshot";
+  if (/\.(m4a|mp3|wav|ogg)$/.test(n)) return "audio";
+  if (n.endsWith(".json") && /turns|lessons/.test(text)) return "memory";
+  if (n.endsWith(".html")) return "pwa";
+  return "text";
+}
+function route(name, text) {
+  const k = kind(name, text);
+  const [module, rule] = ROUTES[k];
+  return { input:name, kind:k, module, rule, next:"Patch " + module + ". " + rule };
+}
+function show(rows) { document.getElementById("out").textContent = JSON.stringify(rows, null, 2); }
+document.getElementById("go").onclick = () => show([route("note", document.getElementById("text").value)]);
+document.getElementById("file").onchange = () => {
+  const files = [...document.getElementById("file").files];
+  Promise.all(files.map(f => f.text().then(t => route(f.name, t)).catch(() => route(f.name, "")))).then(show);
+};
+document.getElementById("drop").addEventListener("dragover", e => e.preventDefault());
+document.getElementById("drop").addEventListener("drop", e => {
+  e.preventDefault();
+  Promise.all([...e.dataTransfer.files].map(f => f.text().then(t => route(f.name, t)).catch(() => route(f.name, "")))).then(show);
+});
+</script>
+</body>
+</html>
