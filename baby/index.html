@@ -58,7 +58,11 @@
     filter:drop-shadow(0 16px 12px rgba(0,0,0,.55)) drop-shadow(0 0 18px rgba(120,220,255,.42)); pointer-events:none; }
   .stage.talk .creature { animation-duration:1.35s; }
   .mote { position:absolute; width:5px; height:5px; border-radius:50%; background:#f4fbff; box-shadow:0 0 10px #9ad8ff; animation:rise 7s linear infinite; }
-  .stage-copy { position:absolute; left:14px; bottom:12px; z-index:2; text-shadow:0 2px 14px #000; }
+  .minis { display:flex; gap:8px; overflow-x:auto; padding:2px 2px 6px; }
+  .mini { flex:0 0 auto; width:84px; min-height:0; padding:0; display:grid; background:#05070d; border-radius:16px; overflow:hidden; }
+  .mini img { width:84px; height:72px; object-fit:cover; display:block; }
+  .mini span { font-family:system-ui,sans-serif; font-size:10px; letter-spacing:.04em; text-align:center; padding:3px 0 6px; color:var(--dim); }
+  .mini.on { border-color:#d7e9ff; box-shadow:0 0 16px rgba(185,220,255,.55); }
   @keyframes live { 0%,100% { transform:translateY(0) rotate(-.5deg); } 50% { transform:translateY(-12px) rotate(.5deg); } }
   @keyframes pulse { 0%,100% { transform:translate(-50%,-50%) scale(1); opacity:calc(var(--life,.75) * .75); } 50% { transform:translate(-50%,-50%) scale(1.08); opacity:var(--life,.75); } }
   @keyframes rise { 0% { transform:translateY(16px); opacity:0; } 18% { opacity:.85; } 100% { transform:translateY(-240px); opacity:0; } }
@@ -80,13 +84,23 @@
     <span class="mote" style="left:32%;bottom:8%;animation-delay:1.4s"></span>
     <span class="mote" style="left:70%;bottom:20%;animation-delay:2.2s"></span>
     <span class="mote" style="left:82%;bottom:6%;animation-delay:3.1s"></span>
-    <img id="avatar" class="creature" alt="Ara, silver fairy" src="avatar.png">
+    <img id="avatar" class="creature" alt="Ara, photoreal silver fairy" src="assets/ara.jpg">
     <div class="stage-copy">
       <div class="kicker">Spark Baby</div>
       <h1 id="title">Ara</h1>
       <div id="banner" class="banner" role="status">Core open</div>
     </div>
   </header>
+  <div class="minis" id="minis" aria-label="What she can show">
+    <button type="button" class="mini" data-id="virus" data-ask="what is a virus"><img alt="" src="assets/virus.jpg"><span>Virus</span></button>
+    <button type="button" class="mini" data-id="microbe" data-ask="how do microbes survive"><img alt="" src="assets/microbe.jpg"><span>Microbe</span></button>
+    <button type="button" class="mini" data-id="fungus" data-ask="how do fungi survive"><img alt="" src="assets/fungus.jpg"><span>Fungus</span></button>
+    <button type="button" class="mini" data-id="plant" data-ask="how do plants survive"><img alt="" src="assets/plant.jpg"><span>Plant</span></button>
+    <button type="button" class="mini" data-id="animal" data-ask="how do animals survive"><img alt="" src="assets/animal.jpg"><span>Animal</span></button>
+    <button type="button" class="mini" data-id="human" data-ask="how do humans survive"><img alt="" src="assets/human.jpg"><span>Human</span></button>
+    <button type="button" class="mini" data-id="edge" data-ask="dusk at the doorway"><img alt="" src="assets/edge.jpg"><span>Edge</span></button>
+    <button type="button" class="mini" data-id="analog" data-ask="what do you sense"><img alt="" src="assets/analog.jpg"><span>Analog</span></button>
+  </div>
   <div class="grid">
     <section class="card" id="drop">
       <div id="log" role="log" aria-live="polite"></div>
@@ -294,6 +308,19 @@ document.getElementById("avatar").addEventListener("error", () => {
   const img = document.getElementById("avatar");
   if (img && img.getAttribute("src") !== "avatar.jpg") img.src = "avatar.jpg";
 });
+function markMini(text) {
+  const low = String(text || "").toLowerCase();
+  let id = "";
+  if (/virus/.test(low)) id = "virus";
+  else if (/microbe|bacteria|archaea|spore/.test(low)) id = "microbe";
+  else if (/fungus|fungi|mushroom|mycel/.test(low)) id = "fungus";
+  else if (/plant|seed|root|light into sugar/.test(low)) id = "plant";
+  else if (/human/.test(low)) id = "human";
+  else if (/animal|moth|shelter/.test(low)) id = "animal";
+  else if (/edge|doorway|dusk|seam/.test(low)) id = "edge";
+  else if (/sim, not the room|analog|warmth|damp/.test(low)) id = "analog";
+  document.querySelectorAll(".mini").forEach((el) => el.classList.toggle("on", !!id && el.getAttribute("data-id") === id));
+}
 function stir() {
   const stage = document.getElementById("stage");
   if (!stage) return;
@@ -381,6 +408,8 @@ function renderAnalog() {
   });
   const stage = document.getElementById("stage");
   if (stage) stage.style.setProperty("--life", String(0.4 + state.analog.light * 0.6));
+  const analogMini = document.querySelector(".mini[data-id=analog]");
+  if (analogMini) analogMini.style.opacity = String(0.45 + state.analog.light * 0.55);
 }
 function mountAnalog() {
   const root = document.getElementById("meters");
@@ -510,7 +539,10 @@ function say(role, content, rule) {
   state.turns.push({ role, content: shown, at: Date.now() });
   state.turns = state.turns.slice(-60);
   save();
-  if (role === "ara") stir();
+  if (role === "ara") {
+    stir();
+    markMini(shown);
+  }
   if (role === "ara" && state.speak && "speechSynthesis" in window) {
     const utter = new SpeechSynthesisUtterance(shown);
     utter.rate = 0.96;
@@ -577,7 +609,7 @@ function knownOdd(raw) {
   if (/slime mold|desire line/.test(low)) return hit("born-side");
   if (/leftover|scaveng|hand-me-down|spare part/.test(low)) return hit("born-leftover");
   if (/hybrid|pidgin|\bgraft\b|\bmule\b/.test(low)) return hit("born-hybrid");
-  if (/liminal|doorway|dialect|\bdusk\b|\bshore\b/.test(low)) return hit("born-edge");
+  if (/liminal|doorway|dialect|\bdusk\b|\bshore\b|\bedges?\b/.test(low)) return hit("born-edge");
   if (/vernacular|heirloom|small and local/.test(low)) return hit("born-small");
   if (/\bplay\b|nonsense|doodle|dreams? rehearse/.test(low)) return hit("born-play");
   if (/fallow|waiting is|tactic of waiting/.test(low)) return hit("born-wait");
@@ -1222,6 +1254,11 @@ addEventListener("pagehide", () => { state.core = false; });
 addEventListener("resize", () => paint());
 mountAnalog();
 showSpace();
+document.getElementById("minis").addEventListener("click", (event) => {
+  const button = event.target.closest(".mini");
+  if (!button) return;
+  respond(button.getAttribute("data-ask"), "miniature");
+});
 document.getElementById("step-sim").addEventListener("click", () => {
   stepAnalog();
   renderAnalog();

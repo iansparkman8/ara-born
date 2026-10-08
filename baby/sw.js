@@ -1,5 +1,5 @@
-const CACHE = "ara-baby-v12";
-const FILES = ["./index.html", "./avatar.png", "./avatar.jpg", "./manifest.webmanifest"];
+const CACHE = "ara-baby-v13";
+const FILES = ["./index.html", "./avatar.png", "./avatar.jpg", "./manifest.webmanifest", "./assets/ara.jpg", "./assets/virus.jpg", "./assets/microbe.jpg", "./assets/fungus.jpg", "./assets/plant.jpg", "./assets/animal.jpg", "./assets/human.jpg", "./assets/edge.jpg", "./assets/analog.jpg"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
