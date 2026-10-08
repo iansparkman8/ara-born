@@ -44,17 +44,44 @@
   .meter { height:6px; border-radius:99px; background:#10192a; overflow:hidden; margin:4px 0; }
   .meter span { display:block; height:100%; width:0; background:linear-gradient(90deg,#244060,var(--glow)); }
   input[type="range"] { width:100%; padding:0 8px; }
+  header.top { display:none; }
+  .stage { position:relative; height:360px; border-radius:24px; overflow:hidden; border:1px solid var(--line);
+    background:
+      radial-gradient(ellipse at 50% 78%, rgba(70,160,220,.32), transparent 58%),
+      radial-gradient(circle at 76% 24%, rgba(150,70,220,.24), transparent 42%),
+      #05070d; }
+  .halo { position:absolute; left:50%; top:48%; width:42%; height:48%; transform:translate(-50%,-50%); border-radius:50%;
+    background:radial-gradient(circle, rgba(190,240,255,.62), rgba(90,40,180,.08) 68%, transparent 72%);
+    filter:blur(6px); opacity:var(--life,.75); animation:pulse 3.6s ease-in-out infinite; }
+  .creature { position:absolute; inset:0; width:100%; height:112%; object-fit:contain; object-position:center 8%;
+    animation:live 4.6s ease-in-out infinite; transform-origin:50% 70%;
+    filter:drop-shadow(0 16px 12px rgba(0,0,0,.55)) drop-shadow(0 0 18px rgba(120,220,255,.42)); pointer-events:none; }
+  .stage.talk .creature { animation-duration:1.35s; }
+  .mote { position:absolute; width:5px; height:5px; border-radius:50%; background:#f4fbff; box-shadow:0 0 10px #9ad8ff; animation:rise 7s linear infinite; }
+  .stage-copy { position:absolute; left:14px; bottom:12px; z-index:2; text-shadow:0 2px 14px #000; }
+  @keyframes live { 0%,100% { transform:translateY(0) rotate(-.5deg); } 50% { transform:translateY(-12px) rotate(.5deg); } }
+  @keyframes pulse { 0%,100% { transform:translate(-50%,-50%) scale(1); opacity:calc(var(--life,.75) * .75); } 50% { transform:translate(-50%,-50%) scale(1.08); opacity:var(--life,.75); } }
+  @keyframes rise { 0% { transform:translateY(16px); opacity:0; } 18% { opacity:.85; } 100% { transform:translateY(-240px); opacity:0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .creature, .halo, .mote { animation:none; }
+  }
   @media (max-width:800px) {
     .grid { grid-template-columns:1fr; }
-    #log { height:42vh; }
+    .stage { height:42vh; min-height:220px; }
+    #log { height:24vh; min-height:120px; }
   }
 </style>
 </head>
 <body>
 <main>
-  <header class="top">
-    <div class="orb"><img id="avatar" alt="Ara, silver fairy" src="avatar.jpg"></div>
-    <div>
+  <header class="stage" id="stage">
+    <div class="halo"></div>
+    <span class="mote" style="left:18%;bottom:18%;animation-delay:0s"></span>
+    <span class="mote" style="left:32%;bottom:8%;animation-delay:1.4s"></span>
+    <span class="mote" style="left:70%;bottom:20%;animation-delay:2.2s"></span>
+    <span class="mote" style="left:82%;bottom:6%;animation-delay:3.1s"></span>
+    <img id="avatar" class="creature" alt="Ara, silver fairy" src="avatar.png">
+    <div class="stage-copy">
       <div class="kicker">Spark Baby</div>
       <h1 id="title">Ara</h1>
       <div id="banner" class="banner" role="status">Core open</div>
@@ -264,8 +291,16 @@ const state = {
 };
 document.getElementById("speak").checked = state.speak;
 document.getElementById("avatar").addEventListener("error", () => {
-  document.getElementById("avatar").remove();
+  const img = document.getElementById("avatar");
+  if (img && img.getAttribute("src") !== "avatar.jpg") img.src = "avatar.jpg";
 });
+function stir() {
+  const stage = document.getElementById("stage");
+  if (!stage) return;
+  stage.classList.add("talk");
+  clearTimeout(stir.timer);
+  stir.timer = setTimeout(() => stage.classList.remove("talk"), 1400);
+}
 
 function loadSpaces(saved) {
   const starter = "console.log('light', world.light.toFixed(2));\nconsole.log('warmth', world.warmth.toFixed(2));\nconsole.log('damp', world.damp.toFixed(2));\nconsole.log('motion', world.motion.toFixed(2));\nconsole.log('hush', world.hush.toFixed(2));\n";
@@ -344,6 +379,8 @@ function renderAnalog() {
     if (bar) bar.style.width = Math.round(state.analog[key] * 100) + "%";
     if (slider && document.activeElement !== slider) slider.value = String(state.analog[key]);
   });
+  const stage = document.getElementById("stage");
+  if (stage) stage.style.setProperty("--life", String(0.4 + state.analog.light * 0.6));
 }
 function mountAnalog() {
   const root = document.getElementById("meters");
@@ -473,6 +510,7 @@ function say(role, content, rule) {
   state.turns.push({ role, content: shown, at: Date.now() });
   state.turns = state.turns.slice(-60);
   save();
+  if (role === "ara") stir();
   if (role === "ara" && state.speak && "speechSynthesis" in window) {
     const utter = new SpeechSynthesisUtterance(shown);
     utter.rate = 0.96;
