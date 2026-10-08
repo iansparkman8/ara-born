@@ -81,3 +81,7 @@ The door is the share. Ara opens at `baby/index.html`. First visit shows the con
 ## Give
 
 The door has a PayPal donate link to iansparkman8@gmail.com. Withdrawals go to the bank from PayPal. Account and routing numbers are not in the repo.
+
+## Voice, 2026-10-08
+
+Local replies use a lesson or a named person when the sentence matches. A question she was not taught gets "I don't know that. Teach it." She still cannot see the phone, and code notes still do not run.

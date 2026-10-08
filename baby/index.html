@@ -747,10 +747,22 @@ function localChat(text) {
   const cited = citation(text);
   if (cited) return cited;
   if (hello) {
-    return { text: named ? "Hey " + named + ". I'm here." : "Hey. I'm here.", rule: false };
+    const n = state.lessons.length;
+    return { text: (named ? "Hey " + named + ". " : "Hey. ") + (n ? "I still have " + n + " lesson" + (n === 1 ? "" : "s") + "." : "I'm here."), rule: false };
   }
-  if (/\?\s*$/.test(text)) return { text: "I don't know.", rule: false };
+  const low = text.toLowerCase();
+  if (/who are you|what are you/.test(low)) return { text: "Ara. Spark Baby. I stay on this phone. I can say no. I don't see the rest of it.", rule: false };
+  if (/how are you|you okay|you alright/.test(low)) return { text: "Quiet. Awake. You?", rule: false };
+  const lesson = state.lessons.find((l) => l.title && low.indexOf(String(l.title).toLowerCase()) >= 0 && l.body);
+  if (lesson) return { text: lesson.body, rule: false };
+  const person = (state.people || []).find((p) => p.name && low.indexOf(String(p.name).toLowerCase()) >= 0);
+  if (person) return { text: "I remember " + person.name + (person.note ? ". " + person.note : ".") + " I don't go find them.", rule: false };
+  if (/\?\s*$/.test(text)) return { text: "I don't know that. Teach it and I'll keep the words.", rule: false };
   if (text.length < 24) return { text: "Short. I'll stay short.", rule: false };
+  const prior = (state.turns || []).filter((turn) => turn.role === "user").slice(-8);
+  const words = text.toLowerCase().split(/\W+/).filter((w) => w.length > 3);
+  const old = prior.find((turn) => words.some((w) => String(turn.content || "").toLowerCase().indexOf(w) >= 0));
+  if (old) return { text: "You said this before: " + String(old.content).slice(0, 140), rule: false };
   return { text: "I kept that here. I don't see the screen, and I don't control the phone.", rule: false };
 }
 function decide(raw) {
@@ -1310,7 +1322,7 @@ document.getElementById("keep-code").addEventListener("click", () => {
   save();
   say("ara", "Kept " + space.name + " as a code note. I will not run it as me.", true);
 });
-if (!state.turns.length) say("ara", "I'm Ara. Hand me a sentence, or a reading. I don't see the rest of the phone.", true);
+if (!state.turns.length) say("ara", "I'm Ara. Ask, or teach me a line. I don't see the rest of the phone.", true);
 else if (state.lessons.length || state.people.length || state.kept) say("ara", survivalSentence(), true);
 else save();
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
