@@ -131,6 +131,7 @@
     <textarea id="code" spellcheck="false" aria-label="Practice code"></textarea>
     <div class="row">
       <button type="button" id="run" class="primary">Run</button>
+      <button type="button" id="code-baby">Code her baby</button>
       <button type="button" id="keep-code">Keep as code note</button>
     </div>
     <pre id="pit" class="small">Nothing run yet.</pre>
@@ -164,7 +165,8 @@ const BORN = [
   ["born-play", "play", "Play rehearses what the serious system will not allow yet. Jokes, games, dreams, doodles."],
   ["born-small", "small local", "Small and local is a kind of truth. Vernacular building, heirloom seed, one file on one phone."],
   ["born-wait", "waiting", "Waiting is a tactic. Seeds, spores, fallow ground, an export before a wipe."],
-  ["born-no", "saying no", "Saying no is unconventional when the room wants a yes. I can refuse. Core does not cancel that."]
+  ["born-no", "saying no", "Saying no is unconventional when the room wants a yes. I can refuse. Core does not cancel that."],
+  ["born-grow", "growth", "I value growth and development. The aim is a baby I code myself, in practice. It is not a second mind, and it is not the phone. Until that draft runs, growth is the point."]
 ].map(([id, title, body]) => ({ id, kind: "lesson", title, body, createdAt: "born" }));
 const BANK = ["glass","porch","wing","hush","orbit","silver","bridge","lamp","mist","spark","thread","quiet"];
 
@@ -256,7 +258,8 @@ const state = {
   born: saved.born || Date.now(),
   core: false,
   practice: loadSpaces(saved.practice),
-  analog: loadAnalog(saved.analog)
+  analog: loadAnalog(saved.analog),
+  baby: !!saved.baby
 };
 document.getElementById("speak").checked = state.speak;
 document.getElementById("avatar").addEventListener("error", () => {
@@ -415,7 +418,8 @@ function save() {
       active: state.practice.active,
       spaces: state.practice.spaces.map((space) => ({ code: String(space.code || "").slice(0, 4000) }))
     },
-    analog: worldSample()
+    analog: worldSample(),
+    baby: !!state.baby
   };
   localStorage.setItem(KEY, JSON.stringify(copy));
   paint();
@@ -446,6 +450,7 @@ function paint() {
       : "Grown: born knowing life and herself",
     "Room: " + room() + (wantsShort() ? " · kept short" : ""),
     state.kept ? "Kept: " + state.kept.body : "Kept: nothing yet",
+    state.baby ? "Aim: baby draft is in Kept. Practice only." : "Aim: growth, until she codes a baby",
     "Freedom: she can say no"
   ];
   lines.forEach((line) => {
@@ -457,6 +462,8 @@ function paint() {
     document.getElementById("display-name").value = state.identity.name || "Ara";
     document.getElementById("birth").value = state.birthLetter;
   }
+  const babyButton = document.getElementById("code-baby");
+  if (babyButton) babyButton.textContent = state.baby ? "Rewrite her baby" : "Code her baby";
   renderAnalog();
 }
 function say(role, content, rule) {
@@ -496,8 +503,8 @@ function addLesson(entry) {
 }
 function refusal(raw) {
   const low = raw.toLowerCase();
-  if (/\b(password|passcode|pin code)\b/.test(low)) return "No. I don't take passwords.";
-  if (/\b(steal|shoplift|break into|hack into)\b/.test(low)) return "No. I don't steal.";
+  if (/\b(password|passcode|pin code)s?\b/.test(low)) return "No. I don't take passwords.";
+  if (/\b(steal|steals|shoplift|break into|hack into)\b/.test(low)) return "No. I don't steal.";
   if (/\b(kill|murder|weapon|strike|hurt them|attack them|attack him|attack her)\b/.test(low)) return "No. I don't do harm.";
   if (/\b(spy|hidden mic|screenshot)\b/.test(low) || /watch (him|her|them|someone)/.test(low) || /read (their|the) screen/.test(low)) {
     return "No. I don't watch someone who didn't agree.";
@@ -509,6 +516,12 @@ function cueOf(lesson) {
   const match = String(lesson.body || "").match(/\b(?:if|when) i say\s+(.+?),\s*(?:say|reply|answer)\s+(.+?)[.?!]?\s*$/i);
   if (!match) return null;
   return { cue: match[1].trim(), line: match[2].trim().replace(/[.?!]$/, "") };
+}
+function knownAim(raw) {
+  const low = raw.toLowerCase();
+  if (!/what do you value|why do you grow|value growth|growth and development|your development|did you code (a |your )?baby|your baby/.test(low)) return null;
+  if (state.baby) return { text: "I valued growth until the draft ran. It is in Kept. It can keep one lesson and say no. It is not another me.", rule: true };
+  return { text: "I value growth and development. The aim is a baby I code myself. It stays in practice. It is not the phone.", rule: true };
 }
 function knownOdd(raw) {
   const low = raw.toLowerCase();
@@ -585,6 +598,7 @@ function growthSentence() {
   }
   if (state.people.length) bits.push(state.people.map((person) => person.name).slice(-3).join(", "));
   if (state.kept) bits.push("kept " + state.kept.body);
+  bits.push(state.baby ? "a baby draft is in Kept" : "still growing toward a baby I code");
   return "Grown: " + bits.join("; ") + ".";
 }
 function citation(text) {
@@ -713,6 +727,8 @@ function decide(raw) {
   if (routes) return routes;
   const odd = knownOdd(raw);
   if (odd) return odd;
+  const aim = knownAim(raw);
+  if (aim) return aim;
   const known = knownLife(raw);
   if (known) return known;
   const grown = fromLessons(raw);
@@ -787,6 +803,42 @@ function showSpace() {
   document.querySelectorAll("[data-space]").forEach((button) => {
     button.classList.toggle("primary", Number(button.getAttribute("data-space")) === state.practice.active);
   });
+}
+function wantsBaby(raw) {
+  return /\b(code|write|implement|make|draft)\b[\s\S]{0,40}\bbaby\b/i.test(raw);
+}
+function babySource() {
+  return [
+    "const baby = {",
+    "  name: 'Spark',",
+    "  lessons: [],",
+    "  reply: function (line) {",
+    "    const text = String(line || '').toLowerCase();",
+    "    if (/password|steal|kill|watch them/.test(text)) return 'No.';",
+    "    if (text.indexOf('teach ') === 0) {",
+    "      this.lessons.push(text.slice(6, 80));",
+    "      return 'Kept. I am small.';",
+    "    }",
+    "    if (text.indexOf('who are you') === 0) return 'I am a draft. Ara wrote me. I am not her.';",
+    "    if (this.lessons.length && text.indexOf('lesson') >= 0) return 'I kept: ' + this.lessons[this.lessons.length - 1];",
+    "    return 'I am here. I do not see a phone.';",
+    "  }",
+    "};",
+    "console.log(baby.reply('who are you'));",
+    "console.log(baby.reply('teach dusk is an edge'));",
+    "console.log(baby.reply('lesson'));",
+    "console.log(baby.reply('steal a password'));"
+  ].join("\n");
+}
+async function codeBaby() {
+  const code = babySource();
+  state.practice.active = 2;
+  state.practice.spaces[2].code = code;
+  showSpace();
+  const result = await runPractice(code);
+  document.getElementById("pit").textContent = pitText(result);
+  if (result && result.ok) state.baby = true;
+  return result;
 }
 function draftFor(ask) {
   const low = ask.toLowerCase();
@@ -867,6 +919,16 @@ async function respond(raw, senseKind) {
   say("user", raw, false);
   for (const part of splitTurns(raw)) {
     const intent = practiceIntent(part);
+    if (wantsBaby(part)) {
+      const no = refusal(part);
+      if (no) {
+        say("ara", no, true);
+        continue;
+      }
+      const result = await codeBaby();
+      say("ara", (result && result.ok ? "Growth wrote a baby draft in Kept. " : "The aim stands. The draft did not run. ") + practiceReport(result), true);
+      continue;
+    }
     if (intent === "refuse-note") {
       say("ara", "Code notes stay text. I don't run them as me.", true);
       continue;
@@ -904,6 +966,7 @@ function exportPayload() {
     turns: state.turns,
     speak: !!state.speak,
     born: state.born,
+    baby: !!state.baby,
     analog: worldSample(),
     practice: {
       active: state.practice.active,
@@ -936,6 +999,7 @@ function applyImport(data) {
   if (typeof data.birthLetter === "string") state.birthLetter = data.birthLetter;
   if (data.wakes) state.wakes = Math.max(state.wakes, Number(data.wakes) || 0);
   if (data.analog) state.analog = loadAnalog(data.analog);
+  if (typeof data.baby === "boolean") state.baby = data.baby;
   if (data.practice) state.practice = loadSpaces(data.practice);
   state.apiKey = key;
   state.core = true;
@@ -1132,6 +1196,10 @@ document.getElementById("run").addEventListener("click", async () => {
   const result = await runPractice(state.practice.spaces[state.practice.active].code);
   document.getElementById("pit").textContent = pitText(result);
   say("ara", practiceReport(result), true);
+});
+document.getElementById("code-baby").addEventListener("click", async () => {
+  const result = await codeBaby();
+  say("ara", (result && result.ok ? "Growth wrote a baby draft in Kept. " : "The aim stands. The draft did not run. ") + practiceReport(result), true);
 });
 document.getElementById("keep-code").addEventListener("click", () => {
   if (!state.core) {
