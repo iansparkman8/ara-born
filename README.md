@@ -77,3 +77,7 @@ There is no APK in this tree. Install `app-debug.apk` only after Actions produce
 ## Publish, 2026-10-08
 
 The door is the share. Ara opens at `baby/index.html`. First visit shows the contract, then the room. Scratch repos on the account were archived; this tree was not. Android package remains `com.sparkx.fairyos`.
+
+## Give
+
+The door has a PayPal donate link to iansparkman8@gmail.com. Withdrawals go to the bank from PayPal. Account and routing numbers are not in the repo.
