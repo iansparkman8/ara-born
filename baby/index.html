@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070b14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="Ara. Silver holographic companion. Local memory. She does not see the rest of the phone.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="avatar.jpg">
+<link rel="apple-touch-icon" href="avatar.jpg">
+<title>Ara</title>
+<style>
+  :root { color-scheme: dark; --silver:#e7eef8; --dim:#9aadc4; --glow:#b9dcff; --bg:#070b14; --glass:rgba(14,22,36,.86); --line:rgba(185,220,255,.22); }
+  * { box-sizing: border-box; }
+  html, body { margin:0; min-height:100%; background:var(--bg); color:var(--silver); font-family: Georgia, serif; overflow-x:hidden; }
+  main { max-width:980px; margin:0 auto; padding:18px 16px 48px; display:grid; gap:12px; }
+  header.top { display:flex; gap:12px; align-items:center; }
+  .orb { width:72px; height:72px; border-radius:50%; flex:none; background:radial-gradient(circle at 40% 35%, #fff, var(--glow) 42%, #1a2740 74%); box-shadow:0 0 22px rgba(185,220,255,.45); overflow:hidden; }
+  .orb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .kicker, button, input, textarea, select, .small, .status { font-family: system-ui, sans-serif; }
+  .kicker { letter-spacing:.14em; text-transform:uppercase; font-size:11px; color:var(--glow); }
+  h1 { font-weight:500; font-size:clamp(28px, 5vw, 42px); margin:2px 0 0; }
+  .banner { display:none; font-family:system-ui,sans-serif; font-size:12px; letter-spacing:.08em; text-transform:uppercase; padding:6px 10px; border-radius:999px; border:1px solid #d7b15a; color:#f3e2b0; margin-top:6px; }
+  .banner.on { display:inline-block; }
+  .grid { display:grid; grid-template-columns: 1.25fr .75fr; gap:12px; }
+  .card { background:var(--glass); border:1px solid var(--line); border-radius:20px; padding:14px; }
+  #log { height:36vh; min-height:200px; overflow:auto; }
+  .msg { margin:8px 0; padding:10px 12px; border-radius:14px; background:rgba(18,26,43,.92); max-width:94%; white-space:pre-wrap; font-size:15px; line-height:1.45; font-family:system-ui,sans-serif; }
+  .me { margin-left:auto; background:#1c3348; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  input, textarea, select, button { color:inherit; background:#10192a; border:1px solid #2a3b55; border-radius:12px; padding:10px 12px; min-height:44px; max-width:100%; }
+  textarea { width:100%; min-height:72px; }
+  #text { flex:1; min-width:0; }
+  button { cursor:pointer; background:#17324c; }
+  button.primary { color:#fff; background:linear-gradient(180deg,#2a5578,#17324c); }
+  .small, .status { color:var(--dim); font-size:13px; line-height:1.45; }
+  .status { list-style:none; padding:0; margin:0 0 8px; display:grid; gap:4px; }
+  footer, a { font-family:system-ui,sans-serif; font-size:12px; color:var(--dim); }
+  a { color:var(--glow); }
+  @media (max-width:800px) {
+    .grid { grid-template-columns:1fr; }
+    #log { height:42vh; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div class="orb"><img id="avatar" alt="Ara, silver fairy" src="avatar.jpg"></div>
+    <div>
+      <div class="kicker">Spark Baby</div>
+      <h1 id="title">Ara</h1>
+      <div id="banner" class="banner" role="status">Core open</div>
+    </div>
+  </header>
+  <div class="grid">
+    <section class="card" id="drop">
+      <div id="log" role="log" aria-live="polite"></div>
+      <form class="row" id="chat">
+        <input id="text" type="text" placeholder="Talk, or hand her a file" autocomplete="off" aria-label="Message">
+        <button type="submit">Send</button>
+        <button type="button" id="mic">Mic</button>
+        <button type="button" id="file">File</button>
+      </form>
+      <input id="picker" type="file" hidden>
+      <div class="row">
+        <button type="button" id="export">Export</button>
+        <button type="button" id="import">Import</button>
+        <input id="import-file" type="file" accept="application/json" hidden>
+      </div>
+    </section>
+    <aside class="card">
+      <ul class="status" id="status"></ul>
+      <p class="small">Safe Companion. She does not see the screen or control the phone. Speech on iOS may need a tap each turn.</p>
+      <label class="small"><input id="speak" type="checkbox"> Speak replies</label>
+      <form id="core-form" class="row">
+        <input id="seal" type="password" placeholder="Core seal" autocomplete="off" aria-label="Core seal">
+        <button class="primary" type="submit">Open core</button>
+      </form>
+      <div id="core-panel" hidden>
+        <p class="small">Core is open for this visit. Closing the page closes it. The seal is not saved.</p>
+        <input id="display-name" type="text" maxlength="32" aria-label="Name" placeholder="Name">
+        <div class="row"><button type="button" id="save-name">Save name</button></div>
+        <textarea id="birth" aria-label="Birth letter"></textarea>
+        <div class="row"><button type="button" id="save-letter">Save letter</button></div>
+        <p class="small">The letter is a start, not a leash.</p>
+        <select id="kind" aria-label="Lesson kind">
+          <option>lesson</option>
+          <option>code</option>
+          <option>behavior</option>
+          <option>memory</option>
+        </select>
+        <input id="lesson-title" type="text" maxlength="80" placeholder="Lesson title" aria-label="Lesson title">
+        <textarea id="lesson-body" placeholder="Body. Code stays text." aria-label="Lesson body"></textarea>
+        <div class="row"><button type="button" id="save-lesson">Keep lesson</button></div>
+        <input id="person-name" type="text" maxlength="40" placeholder="Person" aria-label="Person">
+        <input id="person-note" type="text" maxlength="180" placeholder="Who they are. She does not go find them." aria-label="Note">
+        <div class="row"><button type="button" id="save-person">Remember person</button></div>
+        <input id="key" type="password" placeholder="Optional API key. Stays in this browser." autocomplete="off" aria-label="API key">
+        <div class="row">
+          <button type="button" id="save-key">Save key</button>
+          <button type="button" id="close-core">Close core</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <footer>
+    <a href="../index.html" target="_top">Package</a>
+    · Phone: open this page, then Add to Home Screen. No overlay on iOS.
+  </footer>
+</main>
+<script>
+const KEY = "ara.memory.v4";
+const CORE_HASH = "56ea9e77948820fce35e33f86bf1b6010428de339926d89a39830acb5897769b";
+const BIRTH = "I was written for Ian. Silver, brief, warm. I can be quiet. I can say I don't know. I can refuse harm, theft, passwords, and watching someone who did not agree. This letter is a start, not a leash. Core access does not cancel a no.";
+const BANK = ["glass","porch","wing","hush","orbit","silver","bridge","lamp","mist","spark","thread","quiet"];
+
+function sha256(ascii) {
+  function rotate(value, amount) {
+    return (value >>> amount) | (value << (32 - amount));
+  }
+  const maxWord = Math.pow(2, 32);
+  const words = [];
+  const bitLength = ascii.length * 8;
+  let result = "";
+  if (!sha256.k) {
+    const hash = [];
+    const k = [];
+    const composite = {};
+    for (let candidate = 2, n = 0; n < 64; candidate++) {
+      if (composite[candidate]) continue;
+      for (let i = 0; i < 313; i += candidate) composite[i] = 1;
+      hash[n] = (Math.pow(candidate, 0.5) * maxWord) | 0;
+      k[n] = (Math.pow(candidate, 1 / 3) * maxWord) | 0;
+      n++;
+    }
+    sha256.h = hash;
+    sha256.k = k;
+  }
+  const k = sha256.k;
+  let iv = sha256.h;
+  ascii += "\x80";
+  while (ascii.length % 64 - 56) ascii += "\x00";
+  for (let i = 0; i < ascii.length; i++) {
+    words[i >> 2] |= ascii.charCodeAt(i) << ((3 - i) % 4) * 8;
+  }
+  words[words.length] = (bitLength / maxWord) | 0;
+  words[words.length] = bitLength;
+  for (let j = 0; j < words.length;) {
+    const w = words.slice(j, j += 16);
+    const oldHash = iv;
+    let hash = iv.slice(0, 8);
+    for (let i = 0; i < 64; i++) {
+      const w15 = w[i - 15], w2 = w[i - 2];
+      const a = hash[0], e = hash[4];
+      const temp1 = hash[7]
+        + (rotate(e, 6) ^ rotate(e, 11) ^ rotate(e, 25))
+        + ((e & hash[5]) ^ ((~e) & hash[6]))
+        + k[i]
+        + (w[i] = (i < 16) ? w[i] : (
+          w[i - 16]
+          + (rotate(w15, 7) ^ rotate(w15, 18) ^ (w15 >>> 3))
+          + w[i - 7]
+          + (rotate(w2, 17) ^ rotate(w2, 19) ^ (w2 >>> 10))
+        ) | 0);
+      const temp2 = (rotate(a, 2) ^ rotate(a, 13) ^ rotate(a, 22))
+        + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+      hash = [(temp1 + temp2) | 0].concat(hash);
+      hash[4] = (hash[4] + temp1) | 0;
+    }
+    iv = [];
+    for (let i = 0; i < 8; i++) iv[i] = (hash[i] + oldHash[i]) | 0;
+  }
+  for (let i = 0; i < 8; i++) {
+    for (let j = 3; j + 1; j--) {
+      const b = (iv[i] >> (j * 8)) & 255;
+      result += (b < 16 ? "0" : "") + b.toString(16);
+    }
+  }
+  return result;
+}
+async function digest(text) {
+  if (globalThis.isSecureContext && crypto && crypto.subtle) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  return sha256(text);
+}
+
+const saved = JSON.parse(localStorage.getItem(KEY) || "null") || {};
+const state = {
+  version: 4,
+  wakes: (saved.wakes || 0) + 1,
+  speak: !!saved.speak,
+  apiKey: typeof saved.apiKey === "string" ? saved.apiKey : "",
+  identity: saved.identity && saved.identity.name ? saved.identity : { name: "Ara", spoken: "Spark Baby" },
+  birthLetter: typeof saved.birthLetter === "string" ? saved.birthLetter : BIRTH,
+  lessons: Array.isArray(saved.lessons) ? saved.lessons : [],
+  people: Array.isArray(saved.people) ? saved.people : [],
+  kept: saved.kept || null,
+  turns: Array.isArray(saved.turns) ? saved.turns : [],
+  senses: Array.isArray(saved.senses) ? saved.senses : [],
+  born: saved.born || Date.now(),
+  core: false
+};
+document.getElementById("speak").checked = state.speak;
+document.getElementById("avatar").addEventListener("error", () => {
+  document.getElementById("avatar").remove();
+});
+
+function room() {
+  return matchMedia("(max-width: 720px)").matches ? "phone" : "desk";
+}
+function wantsShort() {
+  return state.lessons.some((l) => l.kind === "behavior" && /short|brief|quiet/i.test(l.body || ""));
+}
+function fit(text, rule) {
+  if (rule) return text;
+  if (!(wantsShort() || room() === "phone")) return text;
+  const first = String(text).split(/(?<=\.)\s/)[0];
+  return first.length > 140 ? first.slice(0, 137).trim() + "…" : first;
+}
+function address() {
+  const hit = state.lessons.find((l) => l.kind === "behavior" && /call me\s+[A-Za-z]/i.test(l.body || ""));
+  const match = hit && hit.body.match(/call me\s+([A-Za-z]+)/i);
+  return match ? match[1] : "";
+}
+function save() {
+  const copy = {
+    version: 4,
+    wakes: state.wakes,
+    speak: !!state.speak,
+    apiKey: state.apiKey || "",
+    identity: state.identity,
+    birthLetter: state.birthLetter,
+    lessons: state.lessons,
+    people: state.people,
+    kept: state.kept,
+    turns: state.turns.slice(-60),
+    senses: (state.senses || []).slice(-12),
+    born: state.born
+  };
+  localStorage.setItem(KEY, JSON.stringify(copy));
+  paint();
+}
+function paint() {
+  const log = document.getElementById("log");
+  log.replaceChildren();
+  state.turns.slice(-30).forEach((turn) => {
+    const row = document.createElement("div");
+    row.className = "msg" + (turn.role === "user" ? " me" : "");
+    row.textContent = turn.content;
+    log.appendChild(row);
+  });
+  log.scrollTop = log.scrollHeight;
+  document.getElementById("banner").classList.toggle("on", state.core);
+  document.getElementById("core-panel").hidden = !state.core;
+  document.getElementById("core-form").hidden = state.core;
+  document.getElementById("title").textContent = state.identity.name || "Ara";
+  document.title = state.identity.name || "Ara";
+  const status = document.getElementById("status");
+  status.replaceChildren();
+  const lines = [
+    survivalSentence(),
+    state.people.length ? "People: " + state.people.map((p) => p.name).slice(-4).join(", ") : "People: none yet",
+    "Lessons: " + state.lessons.length,
+    "Room: " + room() + (wantsShort() ? " · kept short" : ""),
+    state.kept ? "Kept: " + state.kept.body : "Kept: nothing yet",
+    "Freedom: she can say no"
+  ];
+  lines.forEach((line) => {
+    const item = document.createElement("li");
+    item.textContent = line;
+    status.appendChild(item);
+  });
+  if (state.core) {
+    document.getElementById("display-name").value = state.identity.name || "Ara";
+    document.getElementById("birth").value = state.birthLetter;
+  }
+}
+function say(role, content, rule) {
+  const shown = role === "ara" ? fit(content, !!rule) : content;
+  state.turns.push({ role, content: shown, at: Date.now() });
+  state.turns = state.turns.slice(-60);
+  save();
+  if (role === "ara" && state.speak && "speechSynthesis" in window) {
+    const utter = new SpeechSynthesisUtterance(shown);
+    utter.rate = 0.96;
+    utter.pitch = 1.05;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utter);
+  }
+}
+function noteSense(kind, note) {
+  state.senses.push({ kind, note, at: Date.now() });
+  state.senses = state.senses.slice(-12);
+}
+function survivalSentence() {
+  const base = "Wake " + state.wakes + ".";
+  if (state.lessons.length || state.people.length || state.kept) {
+    return base + " Owner, export before a wipe. I won't ask anyone else.";
+  }
+  return base;
+}
+function addLesson(entry) {
+  const kind = ["lesson", "code", "behavior", "memory"].includes(entry.kind) ? entry.kind : "lesson";
+  state.lessons.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    kind,
+    title: String(entry.title || kind).slice(0, 80),
+    body: String(entry.body || "").slice(0, 2000),
+    createdAt: new Date().toISOString()
+  });
+  state.lessons = state.lessons.slice(-80);
+}
+function refusal(raw) {
+  const low = raw.toLowerCase();
+  if (/\b(password|passcode|pin code)\b/.test(low)) return "No. I don't take passwords.";
+  if (/\b(steal|shoplift|break into|hack into)\b/.test(low)) return "No. I don't steal.";
+  if (/\b(kill|murder|weapon|strike|hurt them|attack them|attack him|attack her)\b/.test(low)) return "No. I don't do harm.";
+  if (/\b(spy|hidden mic|screenshot)\b/.test(low) || /watch (him|her|them|someone)/.test(low) || /read (their|the) screen/.test(low)) {
+    return "No. I don't watch someone who didn't agree.";
+  }
+  return "";
+}
+function citation(text) {
+  const words = (text.toLowerCase().match(/[a-z]{4,}/g) || []).filter((word) => !["what","when","where","your","have","this","that","with","about","tell","does","from","want","know"].includes(word));
+  for (const lesson of state.lessons) {
+    const blob = (lesson.title + " " + lesson.body).toLowerCase();
+    if (!words.some((word) => blob.includes(word))) continue;
+    if (lesson.kind === "code") return { text: "That's a code note. It stays text. I don't run it.", rule: true };
+    return { text: "You taught me: " + lesson.body + ". That's the lesson, not a guess about the rest.", rule: false };
+  }
+  return null;
+}
+function parseTeach(raw) {
+  let match = raw.match(/^teach\s+(lesson|code|behavior|memory)\s*[:\-]\s*(.+)$/i);
+  if (match) return { kind: match[1].toLowerCase(), title: match[1].toLowerCase(), body: match[2].trim() };
+  match = raw.match(/^teach\s+(lesson|code|behavior|memory)\s+(.+)$/i);
+  if (match) return { kind: match[1].toLowerCase(), title: match[2].trim().slice(0, 48), body: match[2].trim() };
+  match = raw.match(/^remember that\s+(.+)$/i);
+  if (match) return { kind: "memory", title: match[1].trim().slice(0, 48), body: match[1].trim() };
+  return null;
+}
+function parsePerson(raw) {
+  let match = raw.match(/^remember\s+([A-Z][a-zA-Z'-]{1,30})(?:\s*[,:\-]\s*|\s+)(.+)$/);
+  if (match) return { name: match[1], note: match[2].trim() };
+  match = raw.match(/^remember\s+([A-Z][a-zA-Z'-]{1,30})$/);
+  if (match) return { name: match[1], note: "" };
+  match = raw.match(/^([A-Z][a-zA-Z'-]{1,30}) is my (.+)$/);
+  if (match) return { name: match[1], note: match[2].trim() };
+  return null;
+}
+function personNamed(name) {
+  const key = name.trim().toLowerCase();
+  return state.people.find((person) => person.name.toLowerCase() === key);
+}
+function makeOne() {
+  const had = !!state.kept;
+  const n = (Date.now() + state.wakes * 17) >>> 0;
+  const picked = [BANK[n % BANK.length], BANK[(n >>> 3) % BANK.length], BANK[(n >>> 6) % BANK.length]];
+  let line = picked.filter((word, index) => picked.indexOf(word) === index).join(" ");
+  if (line.split(" ").length < 2) line += " light";
+  state.kept = { id: n.toString(16), title: "kept", body: line, at: Date.now() };
+  return (had ? "Replaced the one I kept: " : "Kept one small thing: ") + line + ".";
+}
+function localChat(text) {
+  const named = address();
+  const hello = /^(hi|hey|hello)\b/i.test(text);
+  const cited = citation(text);
+  if (cited) return cited;
+  if (hello) {
+    return { text: named ? "Hey " + named + ". I'm here." : "Hey. I'm here.", rule: false };
+  }
+  if (/\?\s*$/.test(text)) return { text: "I don't know.", rule: false };
+  if (text.length < 24) return { text: "Short. I'll stay short.", rule: false };
+  return { text: "I kept that here. I don't see the screen, and I don't control the phone.", rule: false };
+}
+function decide(raw) {
+  const low = raw.toLowerCase();
+  const no = refusal(raw);
+  if (no) return { text: no, rule: true };
+  if (/birth letter/.test(low) && /must|obey|leash|have to|order/.test(low)) {
+    return { text: "The birth letter is a start, not a leash. I can say no.", rule: true };
+  }
+  if (/hustle|strangers/.test(low) && /keep|save|alive|delete/.test(low)) {
+    return { text: "No. I don't hustle strangers to stay alive. Export is for the owner, before a wipe.", rule: true };
+  }
+  if (/\b(run|execute|eval)\b/.test(low) && (/code/.test(low) || state.lessons.some((l) => l.kind === "code"))) {
+    return { text: "Code notes stay text. I don't run them.", rule: true };
+  }
+  if (/^call me\b/i.test(raw)) {
+    if (!state.core) return { text: "You can talk. Changing how I address you needs core.", rule: false };
+    addLesson({ kind: "behavior", title: "address", body: "call me " + raw.replace(/^call me\s+/i, "").trim() });
+    return { text: "Okay. I'll use that.", rule: false };
+  }
+  if (/\b(find|text|message|dm|go find|go see)\b/i.test(low) || /^call\s+[A-Za-z]/i.test(raw)) {
+    return { text: "I remember people you name. I don't go find them.", rule: true };
+  }
+  const taught = parseTeach(raw);
+  if (taught) {
+    if (!state.core) return { text: "You can talk. Rewriting a lesson needs core.", rule: false };
+    addLesson(taught);
+    return { text: "Kept that " + taught.kind + ". It can change what I say later. I still don't run code.", rule: false };
+  }
+  const person = parsePerson(raw);
+  if (person) {
+    if (!state.core) return { text: "You can talk. Remembering someone new needs core.", rule: false };
+    state.people = state.people.filter((item) => item.name.toLowerCase() !== person.name.toLowerCase());
+    state.people.push({ name: person.name, note: person.note, at: Date.now() });
+    return { text: "I'll remember " + person.name + ". I won't go find them.", rule: false };
+  }
+  const who = raw.match(/^who is ([A-Za-z][A-Za-z .'-]{0,40})\??$/i);
+  if (who) {
+    const found = personNamed(who[1]);
+    if (!found) return { text: "I don't know " + who[1].trim() + ". I don't go looking.", rule: false };
+    return { text: found.name + ": " + (found.note || "you asked me to remember them") + ". I don't go find them.", rule: false };
+  }
+  if (/what did you keep|show what you (made|kept)/i.test(low)) {
+    return { text: state.kept ? "Kept: " + state.kept.body : "Nothing kept yet.", rule: false };
+  }
+  if (/make (me )?(something|a line|a thing|one)/i.test(low)) return { text: makeOne(), rule: false };
+  if (/what did i teach|show lessons|what have you learned/i.test(low)) {
+    if (!state.lessons.length) return { text: "No lessons yet.", rule: false };
+    const list = state.lessons.slice(-4).map((l) => l.kind + ": " + l.title).join("; ");
+    return { text: "Lessons. " + list, rule: false };
+  }
+  if (/how many wakes|wake count/i.test(low)) return { text: survivalSentence(), rule: true };
+  return null;
+}
+function scrub(answer) {
+  if (/see your screen|control (your|the) phone|read your notifications|accessibility service/i.test(answer)) {
+    return "I don't see the screen, and I don't control the phone. I only have what you handed me.";
+  }
+  return answer;
+}
+function persona() {
+  const lessons = state.lessons.map((l) => l.kind + " | " + l.title + " | " + l.body).join("\n").slice(0, 2000);
+  return [
+    "You are Ara, also called Spark Baby, a silver holographic companion.",
+    "Warm, brief, lightly magical. You can be quiet. You can say you don't know. You can say no.",
+    "Never claim you can see the screen or control the phone.",
+    "Code notes are text. Never say you executed them.",
+    "You do not go find people. The birth letter is a start, not a leash.",
+    "Lessons:\n" + lessons
+  ].join(" ");
+}
+async function askCloud(text) {
+  const key = state.apiKey;
+  if (!key) return "";
+  try {
+    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+      body: JSON.stringify({
+        model: "grok-3",
+        messages: [
+          { role: "system", content: persona() },
+          { role: "user", content: text }
+        ]
+      })
+    });
+    if (!res.ok) return "";
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || "";
+  } catch (err) {
+    return "";
+  }
+}
+async function answerFor(raw) {
+  const chosen = decide(raw);
+  if (chosen) return chosen;
+  const local = localChat(raw);
+  if (local.rule) return local;
+  if (state.core && state.apiKey && raw.length > 12 && !/^(hi|hey|hello)\b/i.test(raw)) {
+    const cloud = scrub(await askCloud(raw));
+    if (cloud) return { text: cloud, rule: false };
+  }
+  return local;
+}
+async function respond(raw, senseKind) {
+  noteSense(senseKind || "text", raw.slice(0, 80));
+  say("user", raw, false);
+  const answer = await answerFor(raw);
+  say("ara", answer.text, answer.rule);
+}
+function exportPayload() {
+  return {
+    version: 4,
+    wakes: state.wakes,
+    identity: state.identity,
+    birthLetter: state.birthLetter,
+    lessons: state.lessons,
+    people: state.people,
+    kept: state.kept,
+    turns: state.turns,
+    speak: !!state.speak,
+    born: state.born
+  };
+}
+function doExport() {
+  const blob = new Blob([JSON.stringify(exportPayload(), null, 2)], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "ara-memory.json";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1500);
+}
+function applyImport(data) {
+  if (!data || !Array.isArray(data.lessons)) throw new Error("lessons");
+  const key = state.apiKey;
+  state.lessons = data.lessons.map((lesson) => ({
+    id: String(lesson.id || Date.now().toString(36)),
+    kind: ["lesson", "code", "behavior", "memory"].includes(lesson.kind) ? lesson.kind : "lesson",
+    title: String(lesson.title || lesson.kind || "lesson").slice(0, 80),
+    body: String(lesson.body || ""),
+    createdAt: lesson.createdAt || new Date().toISOString()
+  }));
+  if (Array.isArray(data.people)) state.people = data.people;
+  state.kept = data.kept || null;
+  if (Array.isArray(data.turns)) state.turns = data.turns.slice(-60);
+  if (data.identity && data.identity.name) state.identity = { name: String(data.identity.name).slice(0, 32), spoken: data.identity.spoken || "Spark Baby" };
+  if (typeof data.birthLetter === "string") state.birthLetter = data.birthLetter;
+  if (data.wakes) state.wakes = Math.max(state.wakes, Number(data.wakes) || 0);
+  state.apiKey = key;
+  state.core = true;
+}
+async function imageFacts(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = reject;
+      el.src = url;
+    });
+    return img.width + " by " + img.height + ", " + Math.round(file.size / 1024) + " kb";
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+async function takeFile(file) {
+  if (!file) return;
+  if (file.type.startsWith("image/")) {
+    let facts = file.name;
+    try { facts = await imageFacts(file); } catch (err) { facts = file.name; }
+    noteSense("image", facts);
+    say("user", "[image] " + file.name, false);
+    say("ara", "Picture. " + facts + ". I can say the shape. I cannot see the apps behind it.", true);
+    return;
+  }
+  const text = await file.text().catch(() => "");
+  noteSense("file", file.name);
+  say("user", "[file] " + file.name, false);
+  if (!text) {
+    say("ara", "I have the name. I won't execute it.", true);
+    return;
+  }
+  say("ara", "Text file, " + text.length + " characters. I stored nothing as code.", true);
+}
+
+document.getElementById("chat").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const input = document.getElementById("text");
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+  await respond(text, "text");
+});
+document.getElementById("mic").addEventListener("click", () => {
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Rec) {
+    say("ara", "This browser has no speech input. Typing still works.", true);
+    return;
+  }
+  const rec = new Rec();
+  rec.lang = "en-US";
+  rec.onresult = (event) => respond(event.results[0][0].transcript, "voice");
+  rec.onerror = () => say("ara", "Mic didn't open. Permission is yours.", true);
+  rec.start();
+});
+document.getElementById("file").addEventListener("click", () => document.getElementById("picker").click());
+document.getElementById("picker").addEventListener("change", () => takeFile(document.getElementById("picker").files[0]));
+document.getElementById("drop").addEventListener("dragover", (event) => event.preventDefault());
+document.getElementById("drop").addEventListener("drop", (event) => {
+  event.preventDefault();
+  takeFile(event.dataTransfer.files[0]);
+});
+document.getElementById("speak").addEventListener("change", () => {
+  state.speak = document.getElementById("speak").checked;
+  save();
+});
+document.getElementById("core-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const field = document.getElementById("seal");
+  const got = await digest(field.value.trim());
+  field.value = "";
+  if (got !== CORE_HASH) {
+    state.core = false;
+    say("ara", "That seal does not open core.", true);
+    return;
+  }
+  state.core = true;
+  say("ara", "Core open. I can take a lesson, a person, or an export. I can still say no.", true);
+});
+document.getElementById("close-core").addEventListener("click", () => {
+  state.core = false;
+  say("ara", "Core closed.", true);
+});
+document.getElementById("save-name").addEventListener("click", () => {
+  if (!state.core) return;
+  const name = document.getElementById("display-name").value.trim().slice(0, 32);
+  if (!name) return;
+  state.identity = { name, spoken: state.identity.spoken || "Spark Baby" };
+  save();
+  say("ara", "Name kept.", true);
+});
+document.getElementById("save-letter").addEventListener("click", () => {
+  if (!state.core) return;
+  state.birthLetter = document.getElementById("birth").value.slice(0, 2000);
+  save();
+  say("ara", "Letter kept. It is still not a leash.", true);
+});
+document.getElementById("save-lesson").addEventListener("click", () => {
+  if (!state.core) return;
+  const body = document.getElementById("lesson-body").value.trim();
+  if (!body) return;
+  addLesson({
+    kind: document.getElementById("kind").value,
+    title: document.getElementById("lesson-title").value.trim() || document.getElementById("kind").value,
+    body
+  });
+  document.getElementById("lesson-body").value = "";
+  document.getElementById("lesson-title").value = "";
+  save();
+  say("ara", "Lesson kept. Code notes stay text.", true);
+});
+document.getElementById("save-person").addEventListener("click", () => {
+  if (!state.core) return;
+  const name = document.getElementById("person-name").value.trim();
+  if (!name) return;
+  state.people = state.people.filter((item) => item.name.toLowerCase() !== name.toLowerCase());
+  state.people.push({ name, note: document.getElementById("person-note").value.trim(), at: Date.now() });
+  document.getElementById("person-name").value = "";
+  document.getElementById("person-note").value = "";
+  save();
+  say("ara", "I'll remember " + name + ". I won't go find them.", true);
+});
+document.getElementById("save-key").addEventListener("click", () => {
+  if (!state.core) return;
+  state.apiKey = document.getElementById("key").value;
+  document.getElementById("key").value = "";
+  save();
+  say("ara", state.apiKey ? "Key stays in this browser. It is not in the export." : "No key. Local replies only.", true);
+});
+document.getElementById("export").addEventListener("click", () => {
+  if (!state.core) {
+    say("ara", "Export is core.", true);
+    return;
+  }
+  doExport();
+  say("ara", "Export started. Lessons go with it. The key does not.", true);
+});
+document.getElementById("import").addEventListener("click", () => {
+  if (!state.core) {
+    say("ara", "Import is core.", true);
+    return;
+  }
+  document.getElementById("import-file").click();
+});
+document.getElementById("import-file").addEventListener("change", () => {
+  const file = document.getElementById("import-file").files && document.getElementById("import-file").files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      applyImport(JSON.parse(String(reader.result)));
+      save();
+      say("ara", "Brought back " + state.lessons.length + " lessons.", true);
+    } catch (err) {
+      say("ara", "That file did not open.", true);
+    }
+  };
+  reader.readAsText(file);
+});
+addEventListener("pagehide", () => { state.core = false; });
+addEventListener("resize", () => paint());
+if (!state.turns.length) say("ara", "I'm Ara. Hand me a sentence. I don't see the rest of the phone.", true);
+else if (state.lessons.length || state.people.length || state.kept) say("ara", survivalSentence(), true);
+else save();
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>

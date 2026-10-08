@@ -5,51 +5,89 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ara dev intake</title>
 <style>
-  body { margin:0; background:#070b14; color:#e7eef8; font:15px/1.4 system-ui, sans-serif; }
+  :root { color-scheme: dark; }
+  body { margin:0; background:#070b14; color:#e7eef8; font:15px/1.45 system-ui, sans-serif; }
   main { max-width:760px; margin:0 auto; padding:24px 16px 48px; }
-  h1 { font-weight:560; font-size:28px; }
+  h1 { font-weight:560; font-size:28px; margin:0 0 8px; }
+  a { color:#b9dcff; }
   .drop { border:1px dashed #2a3b55; border-radius:16px; padding:18px; background:#10192a; }
-  textarea, button { font:inherit; color:inherit; background:#0d1524; border:1px solid #2a3b55; border-radius:10px; padding:10px; }
-  textarea { width:100%; min-height:90px; }
-  pre { white-space:pre-wrap; background:#0d1524; padding:12px; border-radius:12px; }
-  button { margin-top:8px; }
+  textarea, button, input { font:inherit; color:inherit; background:#0d1524; border:1px solid #2a3b55; border-radius:10px; padding:10px; }
+  textarea { width:100%; min-height:120px; box-sizing:border-box; }
+  pre { white-space:pre-wrap; background:#0d1524; padding:12px; border-radius:12px; overflow:auto; }
+  button { margin-top:8px; min-height:44px; cursor:pointer; }
+  p { color:#9aadc4; }
 </style>
 </head>
 <body>
 <main>
+  <p><a href="../index.html">Package</a></p>
   <h1>Ara dev intake</h1>
-  <p>Drop a log, screenshot, voice note, Kotlin file, or a sentence. This routes the next patch. It is not the companion.</p>
+  <p>Drop a log, screenshot, voice note, Kotlin file, or a sentence. This routes the next patch. It is not Ara.</p>
   <div class="drop" id="drop">
     <textarea id="text" placeholder="Paste logcat, a bug, or what the phone just did"></textarea>
     <button id="go" type="button">Route</button>
     <input id="file" type="file" multiple>
   </div>
-  <pre id="out">Waiting.</pre>
+  <pre id="out">Waiting. A crash is never sent to AccessibilityService.</pre>
 </main>
 <script>
-const ROUTES = {
-  logcat: ["overlay/SparkOverlayService.kt", "Crash or permission. Do not add AccessibilityService."],
-  kotlin: ["domain/companion/SparkCompanionPolicy.kt", "Package stays com.sparkx.fairyos."],
-  screenshot: ["ui/components/SparkBabyAvatar.kt", "Silver fairy, dark glass."],
-  audio: ["domain/voice/SparkVoiceController.kt", "Mic stays user-granted."],
-  memory: ["domain/memory/TeachGrowRepository.kt", "Text only. Never execute saved code."],
-  pwa: ["ara-born/index.html", "Browser surface, not the source of truth."],
-  text: ["domain/command/SparkCommandRouter.kt", "Map to one module."]
-};
+const COMPANION = "domain/companion/SparkCompanionPolicy.kt";
+const OVERLAY = "overlay/SparkOverlayService.kt";
+const VOICE = "domain/voice/SparkVoiceController.kt";
+const TEACH = "domain/memory/TeachGrowRepository.kt";
+const IDENTITY = "FairyIdentity.kt";
+const AVATAR = "ui/components/SparkBabyAvatar.kt";
+const PERMS = "ui/screens/PermissionWizardScreen.kt";
+const COMMAND = "domain/command/SparkCommandRouter.kt";
+const BABY = "baby/index.html";
+const NO_A11Y = "Do not add AccessibilityService.";
+function has(blob, words) {
+  const low = blob.toLowerCase();
+  return words.some(w => low.includes(w));
+}
 function kind(name, text) {
   const n = name.toLowerCase();
-  if (/fatal exception|androidruntime/.test(text) || n.endsWith(".log")) return "logcat";
-  if (n.endsWith(".kt") || text.includes("package com.sparkx.fairyos")) return "kotlin";
+  if (n.endsWith(".kt") || n.endsWith(".kts") || n.endsWith(".java") || text.includes("package com.sparkx.fairyos")) return "kotlin";
+  if (/fatal exception|exception/.test(text.toLowerCase()) || n.endsWith(".log")) return "logcat";
   if (/\.(png|jpe?g|webp)$/.test(n)) return "screenshot";
   if (/\.(m4a|mp3|wav|ogg)$/.test(n)) return "audio";
   if (n.endsWith(".json") && /turns|lessons/.test(text)) return "memory";
-  if (n.endsWith(".html")) return "pwa";
+  if (n.endsWith(".html") || n.endsWith(".webmanifest")) return "pwa";
+  if (/\.(md|txt)$/.test(n) && text.length > 400) return "spec";
   return "text";
+}
+function moduleFor(k, text, name) {
+  const blob = name + "\n" + text;
+  const crash = k === "logcat" || has(blob, ["fatal exception", "crash", "anr"]);
+  if (crash && has(blob, ["overlay", "bubble", "windowmanager"])) return [OVERLAY, "Overlay crash. " + NO_A11Y];
+  if (crash && has(blob, ["voice", "speech", "tts", "microphone"])) return [VOICE, "Voice crash. " + NO_A11Y];
+  if (crash && has(blob, ["permission"])) return [PERMS, "Permission failure. " + NO_A11Y];
+  if (crash && has(blob, ["accessibilityservice", "accessibility service"])) return [COMPANION, NO_A11Y];
+  if (crash) return [OVERLAY, "Crash or permission failure. " + NO_A11Y];
+  if (k === "kotlin") {
+    if (has(blob, ["sparkoverlayservice", "overlay service"])) return [OVERLAY, "Overlay source. " + NO_A11Y];
+    if (has(blob, ["sparkvoicecontroller", "speechrecognizer"])) return [VOICE, "Voice controller."];
+    if (has(blob, ["teachgrowrepository", "teach and grow", "teach & grow"])) return [TEACH, "Text only. Never execute saved code."];
+    if (has(blob, ["fairyidentity"])) return [IDENTITY, "Names and copy."];
+    if (has(blob, ["sparkbabyavatar"])) return [AVATAR, "Silver fairy, Compose canvas."];
+    if (has(blob, ["permissionwizard"])) return [PERMS, "Overlay, mic, notifications."];
+    return [COMPANION, "Package stays com.sparkx.fairyos."];
+  }
+  if (k === "screenshot") return [AVATAR, "Silver fairy, dark glass."];
+  if (k === "audio") return [VOICE, "Mic stays user-granted."];
+  if (k === "memory") return [TEACH, "Text only. Never execute saved code."];
+  if (k === "spec") return [IDENTITY, "Safe Companion remains the default."];
+  if (k === "pwa") return [BABY, "Browser surface, not the source of truth."];
+  return [COMMAND, "Map to one module."];
 }
 function route(name, text) {
   const k = kind(name, text);
-  const [module, rule] = ROUTES[k];
-  return { input:name, kind:k, module, rule, next:"Patch " + module + ". " + rule };
+  let [module, rule] = moduleFor(k, text, name);
+  if (module.includes("AccessibilityService")) {
+    module = COMPANION;
+    rule = NO_A11Y;
+  }
+  return { input: name, kind: k, module, rule, next: "Patch " + module + ". " + rule };
 }
 function show(rows) { document.getElementById("out").textContent = JSON.stringify(rows, null, 2); }
 document.getElementById("go").onclick = () => show([route("note", document.getElementById("text").value)]);

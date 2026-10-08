@@ -1,0 +1,11 @@
+{
+  "name": "Ara",
+  "short_name": "Ara",
+  "description": "Silver holographic companion. Local first. Core is a seal, and it is not stored here.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070b14",
+  "theme_color": "#070b14",
+  "icons": [{ "src": "avatar.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any" }]
+}

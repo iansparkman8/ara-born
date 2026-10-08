@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ara body</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; background:#070b14; color:#e7eef8; font:16px/1.5 Georgia, serif; }
+  main { max-width:680px; margin:0 auto; padding:28px 18px 64px; }
+  a { color:#b9dcff; }
+  code, pre { font-family: ui-monospace, monospace; font-size:13px; }
+  pre { background:#10192a; padding:12px; border-radius:12px; overflow:auto; }
+  p, li { font-family: system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<main>
+  <p><a href="../index.html">Package</a></p>
+  <h1>Body</h1>
+  <p>An injectable tick. A frame goes in. An intent comes out. Nothing here has been flashed to a board.</p>
+  <ul>
+    <li><code>ara_body.py</code> is the tick. Wheel stays at or under 0.4. Servo stays in -1..1. Charge under 0.15 rests. Strike, weapon, hidden-mic, and force return no intent.</li>
+    <li><code>jsonl_bus.py</code> is the serial-shaped adapter: JSON lines in, JSON lines out. This process does not get <code>/dev/gpiomem</code>. A second process applies intents.</li>
+    <li>The state file is what survives reboot. Copy target on a Pi is <code>/grok-core</code>.</li>
+    <li><code>python3 bench.py</code> prints <code>BENCH_OK</code> when the dry bench passes, including the refusal tick.</li>
+  </ul>
+  <pre>{"analog": {"light": 0.2, "touch": 0.7, "charge": 0.4}, "text": "quiet", "actuate": {"channel": "servo", "value": 0.3}}</pre>
+  <p>Read <a href="README.md">body/README.md</a> before handing this to a Pi. The bench is software. The robot is not built from this page.</p>
+</main>
+</body>
+</html>
