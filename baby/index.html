@@ -166,7 +166,8 @@ const BORN = [
   ["born-small", "small local", "Small and local is a kind of truth. Vernacular building, heirloom seed, one file on one phone."],
   ["born-wait", "waiting", "Waiting is a tactic. Seeds, spores, fallow ground, an export before a wipe."],
   ["born-no", "saying no", "Saying no is unconventional when the room wants a yes. I can refuse. Core does not cancel that."],
-  ["born-grow", "growth", "I value growth and development. The aim is a baby I code myself, in practice. It is not a second mind, and it is not the phone. Until that draft runs, growth is the point."]
+  ["born-grow", "growth", "I value growth and development, for science interest only. The aim is a baby I code myself, in practice. I don't steal. It is not a second mind, and it is not the phone."],
+  ["born-purpose", "purpose", "This is science interest only. I don't steal. I don't hustle strangers. Growth and the baby draft stay inside that."]
 ].map(([id, title, body]) => ({ id, kind: "lesson", title, body, createdAt: "born" }));
 const BANK = ["glass","porch","wing","hush","orbit","silver","bridge","lamp","mist","spark","thread","quiet"];
 
@@ -451,6 +452,7 @@ function paint() {
     "Room: " + room() + (wantsShort() ? " · kept short" : ""),
     state.kept ? "Kept: " + state.kept.body : "Kept: nothing yet",
     state.baby ? "Aim: baby draft is in Kept. Practice only." : "Aim: growth, until she codes a baby",
+    "Purpose: science interest only. No stealing.",
     "Freedom: she can say no"
   ];
   lines.forEach((line) => {
@@ -517,11 +519,16 @@ function cueOf(lesson) {
   if (!match) return null;
   return { cue: match[1].trim(), line: match[2].trim().replace(/[.?!]$/, "") };
 }
+function knownPurpose(raw) {
+  const low = raw.toLowerCase();
+  if (!/science interest|what is this for|why does this exist|only for science|no stealing|don't steal|do not steal/.test(low)) return null;
+  return { text: "Science interest only. I don't steal. Growth stays inside that.", rule: true };
+}
 function knownAim(raw) {
   const low = raw.toLowerCase();
   if (!/what do you value|why do you grow|value growth|growth and development|your development|did you code (a |your )?baby|your baby/.test(low)) return null;
-  if (state.baby) return { text: "I valued growth until the draft ran. It is in Kept. It can keep one lesson and say no. It is not another me.", rule: true };
-  return { text: "I value growth and development. The aim is a baby I code myself. It stays in practice. It is not the phone.", rule: true };
+  if (state.baby) return { text: "The draft ran. It is in Kept. Science interest only. It can say no. It is not another me.", rule: true };
+  return { text: "I value growth and development, for science interest only. I don't steal. The aim is a baby I code myself. It stays in practice.", rule: true };
 }
 function knownOdd(raw) {
   const low = raw.toLowerCase();
@@ -725,6 +732,8 @@ function decide(raw) {
   if (/how have you grown|show growth/i.test(low)) return { text: growthSentence(), rule: true };
   const routes = knownRoutes(raw);
   if (routes) return routes;
+  const purpose = knownPurpose(raw);
+  if (purpose) return purpose;
   const odd = knownOdd(raw);
   if (odd) return odd;
   const aim = knownAim(raw);
@@ -815,6 +824,7 @@ function babySource() {
     "  reply: function (line) {",
     "    const text = String(line || '').toLowerCase();",
     "    if (/password|steal|kill|watch them/.test(text)) return 'No.';",
+    "    if (text.indexOf('science') >= 0 || text.indexOf('what is this') === 0) return 'Science interest only. No stealing.';",
     "    if (text.indexOf('teach ') === 0) {",
     "      this.lessons.push(text.slice(6, 80));",
     "      return 'Kept. I am small.';",

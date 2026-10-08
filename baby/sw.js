@@ -1,4 +1,4 @@
-const CACHE = "ara-baby-v10";
+const CACHE = "ara-baby-v11";
 const FILES = ["./index.html", "./avatar.jpg", "./manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
