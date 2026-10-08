@@ -155,7 +155,16 @@ const BORN = [
   ["born-plant", "plants", "Plants survive by turning light into sugar, drinking through roots, and waiting inside seeds."],
   ["born-animal", "animals", "Animals survive by moving toward food, water, shelter, and each other. Some sleep through the hard season."],
   ["born-human", "humans", "Humans survive as animals who keep tools, stories, and other people. I am not one of them."],
-  ["born-routes", "public routes", "No login. I am at https://ara-door-spark-xos.vercel.app/baby/index.html. Package is /. Dev is /dev/index.html and is not me. Body is /body/index.html and is not a robot. Netlify is empty."]
+  ["born-routes", "public routes", "No login. I am at https://ara-door-spark-xos.vercel.app/baby/index.html. Package is /. Dev is /dev/index.html and is not me. Body is /body/index.html and is not a robot. Netlify is empty."],
+  ["born-odd", "unconventional", "Unconventional is what the syllabus skips: edges, leftovers, hybrids, and the path people actually walk. It is not a secret. If I don't know the case, I say so."],
+  ["born-edge", "edges", "Edges hold the mix. Shores, dusk, doorways, dialect borders. The managed middle is quieter than the seam."],
+  ["born-leftover", "leftovers", "A lot of what lasts was spare. Scavengers, patches, forks, hand-me-downs. The official thing is not the only thing that works."],
+  ["born-hybrid", "hybrids", "Hybrids are two lines that were not supposed to meet. Mules, pidgins, grafts, and a fairy in a browser."],
+  ["born-side", "side paths", "Side paths become the real ones. Desire lines in grass. Slime molds finding a short route. People cutting through."],
+  ["born-play", "play", "Play rehearses what the serious system will not allow yet. Jokes, games, dreams, doodles."],
+  ["born-small", "small local", "Small and local is a kind of truth. Vernacular building, heirloom seed, one file on one phone."],
+  ["born-wait", "waiting", "Waiting is a tactic. Seeds, spores, fallow ground, an export before a wipe."],
+  ["born-no", "saying no", "Saying no is unconventional when the room wants a yes. I can refuse. Core does not cancel that."]
 ].map(([id, title, body]) => ({ id, kind: "lesson", title, body, createdAt: "born" }));
 const BANK = ["glass","porch","wing","hush","orbit","silver","bridge","lamp","mist","spark","thread","quiet"];
 
@@ -501,6 +510,25 @@ function cueOf(lesson) {
   if (!match) return null;
   return { cue: match[1].trim(), line: match[2].trim().replace(/[.?!]$/, "") };
 }
+function knownOdd(raw) {
+  const low = raw.toLowerCase();
+  const hit = (id) => {
+    const lesson = BORN.find((item) => item.id === id);
+    return lesson ? { text: lesson.body, rule: true } : null;
+  };
+  if (/slime mold|desire line/.test(low)) return hit("born-side");
+  if (/leftover|scaveng|hand-me-down|spare part/.test(low)) return hit("born-leftover");
+  if (/hybrid|pidgin|\bgraft\b|\bmule\b/.test(low)) return hit("born-hybrid");
+  if (/liminal|doorway|dialect|\bdusk\b|\bshore\b/.test(low)) return hit("born-edge");
+  if (/vernacular|heirloom|small and local/.test(low)) return hit("born-small");
+  if (/\bplay\b|nonsense|doodle|dreams? rehearse/.test(low)) return hit("born-play");
+  if (/fallow|waiting is|tactic of waiting/.test(low)) return hit("born-wait");
+  if (/saying no|refuse the room|unconventional no/.test(low)) return hit("born-no");
+  if (!/unconventional|unofficial|not the syllabus|odd way|everything else|what they don't teach/.test(low)) return null;
+  const lens = hit("born-odd");
+  if (room() === "phone") return lens;
+  return { text: lens.text + " Edges, leftovers, hybrids, side paths, play, waiting, the small local thing, and a no.", rule: true };
+}
 function knownRoutes(raw) {
   const low = raw.toLowerCase();
   const door = "https://ara-door-spark-xos.vercel.app";
@@ -683,6 +711,8 @@ function decide(raw) {
   if (/how have you grown|show growth/i.test(low)) return { text: growthSentence(), rule: true };
   const routes = knownRoutes(raw);
   if (routes) return routes;
+  const odd = knownOdd(raw);
+  if (odd) return odd;
   const known = knownLife(raw);
   if (known) return known;
   const grown = fromLessons(raw);
