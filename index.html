@@ -1,45 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#070b14" />
+<meta name="description" content="Ara. A silver holographic companion who stays on your phone. She can say no. She does not see the rest of it." />
 <title>Ara</title>
 <style>
-  :root { color-scheme: dark; }
-  body { margin:0; background:#070b14; color:#e7eef8; font:16px/1.5 Georgia, serif; }
-  main { max-width:720px; margin:0 auto; padding:28px 18px 72px; }
-  img { width:84px; height:84px; border-radius:50%; object-fit:cover; box-shadow:0 0 24px rgba(185,220,255,.45); }
-  a.card { display:block; margin:12px 0; padding:16px 18px; border-radius:18px; border:1px solid rgba(185,220,255,.28); background:rgba(16,23,34,.9); color:#e7eef8; text-decoration:none; font-family:system-ui,sans-serif; min-height:44px; }
-  a.card strong { display:block; font-size:18px; }
-  a.card span { color:#9aadc4; font-size:14px; }
-  h1 { font-weight:500; font-size:42px; margin:8px 0; }
-  p, li { font-family:system-ui,sans-serif; color:#c5d4e6; }
-  .kicker { font-family:system-ui,sans-serif; letter-spacing:.16em; text-transform:uppercase; font-size:11px; color:#b9dcff; }
+  :root { color-scheme: dark; --ink:#e7eef8; --dim:#9aadc4; --glow:#b9dcff; --bg:#070b14; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:Georgia, serif; }
+  main { max-width:760px; margin:0 auto; padding:28px 18px 72px; }
+  .ring {
+    width:220px; height:220px; margin:12px auto 8px; border-radius:50%;
+    background:
+      radial-gradient(circle at 50% 42%, rgba(255,255,255,.85) 0 2px, transparent 3px),
+      url("avatar.jpg") center 18% / cover no-repeat;
+    box-shadow:0 0 60px rgba(185,220,255,.28);
+    border:1px solid rgba(185,220,255,.35);
+  }
+  .kicker { font-family:system-ui,sans-serif; letter-spacing:.18em; text-transform:uppercase; font-size:11px; color:var(--glow); text-align:center; }
+  h1 { font-weight:500; font-size:clamp(42px, 8vw, 68px); text-align:center; margin:8px 0; letter-spacing:-.03em; }
+  .lede { font-size:22px; line-height:1.4; color:#d5e2f2; text-align:center; margin:0 auto 22px; max-width:22em; }
+  .card { display:block; margin:12px 0; padding:16px 18px; border-radius:18px; border:1px solid rgba(185,220,255,.28); background:rgba(16,23,34,.9); color:var(--ink); text-decoration:none; font-family:system-ui,sans-serif; }
+  .card strong { display:block; font-size:18px; }
+  .card span { color:var(--dim); font-size:14px; line-height:1.4; }
+  .primary { background:#e7eef8; color:#10141c; }
+  h2 { font-weight:500; font-size:28px; }
+  li, p.note { font-family:system-ui,sans-serif; color:var(--dim); line-height:1.5; }
+  a { color:var(--glow); }
 </style>
 </head>
 <body>
 <main>
-  <img alt="Ara, silver fairy" src="avatar.jpg">
+  <div class="ring" role="img" aria-label="Ara, silver fairy"></div>
   <div class="kicker">Spark Baby</div>
   <h1>Ara</h1>
-  <p>One package. The baby people can open, the body a bench can inject, and a note for the Android overlay that already has a repo.</p>
-  <a class="card" href="baby/index.html"><strong>Baby</strong><span>Silver companion. Local memory, speech, six abilities. Add to Home Screen.</span></a>
-  <a class="card" href="dev/index.html"><strong>Dev intake</strong><span>A log, a screenshot, or a Kotlin file. Routes the next patch. Not her.</span></a>
-  <a class="card" href="body/index.html"><strong>Body</strong><span>Tick and JSONL adapter. Bench-tested. Not flashed.</span></a>
-  <h2>Real</h2>
+  <p class="lede">A silver companion who stays on the phone. She can be quiet. She can say she does not know. She can say no.</p>
+  <a class="card primary" href="baby/index.html"><strong>Open Ara</strong><span>Local memory. Speech if the browser allows it. No account.</span></a>
+  <a class="card" href="body/index.html"><strong>The body</strong><span>A bench and a tick. Not a robot. Not flashed.</span></a>
+  <a class="card" href="https://github.com/iansparkman8/SparkXFairyOS"><strong>Android overlay</strong><span>SparkXFairyOS. Package com.sparkx.fairyos. The APK is an Actions artifact, not a file in this repo.</span></a>
+  <h2>What she will not do</h2>
   <ul>
-    <li>The baby works from this folder with no cloud key. Core is a seal you paste. It is not in the files.</li>
-    <li>Export and import keep lessons. The optional key stays in the browser.</li>
-    <li><code>python3 body/bench.py</code> prints BENCH_OK, including the refusal tick.</li>
-    <li>Android package stays <code>com.sparkx.fairyos</code>. <code>android/CoreSeal.kt</code> is the drop-in.</li>
+    <li>See the rest of the phone. No screen reading. No overlay on iOS.</li>
+    <li>Run saved code. Teach and Grow notes stay text.</li>
+    <li>Keep an API key in an export. A key, if you paste one, stays in that browser.</li>
+    <li>Ask a stranger to keep her alive. Export is how she moves.</li>
   </ul>
-  <h2>Not real</h2>
-  <ul>
-    <li>No APK in this folder. An APK exists only if GitHub Actions uploaded SparkXFairyOS-v7-debug-apk.</li>
-    <li>No robot was flashed. The body does not get /dev/gpiomem.</li>
-    <li>No overlay on iOS. Speech input there may need a tap each turn.</li>
-    <li>Public, no login: <a href="https://ara-door-spark-xos.vercel.app/">ara-door-spark-xos.vercel.app</a>. Netlify is still empty. Credits blocked that deploy.</li>
-  </ul>
+  <p class="note">Phone: open Ara in Chrome, menu, Add to Home screen. iPhone: Share, Add to Home Screen. Speech input there may need a tap each turn.</p>
+  <p class="note">Source: <a href="https://github.com/iansparkman8/ara-born">iansparkman8/ara-born</a></p>
 </main>
 </body>
 </html>

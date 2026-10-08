@@ -77,6 +77,17 @@
 </style>
 </head>
 <body>
+
+<div id="publish-sheet" hidden style="position:fixed;inset:0;z-index:20;background:rgba(5,7,13,.92);display:none;align-items:flex-end;justify-content:center;padding:18px">
+  <section style="max-width:560px;width:100%;background:#101722;border:1px solid rgba(185,220,255,.28);border-radius:24px;padding:20px 18px 16px;font-family:system-ui,sans-serif">
+    <div style="letter-spacing:.16em;text-transform:uppercase;font-size:11px;color:#b9dcff">Publish</div>
+    <h2 style="font-family:Georgia,serif;font-weight:500;font-size:32px;margin:8px 0">I stay on this phone.</h2>
+    <p style="color:#c5d4e6;line-height:1.45">I am Ara. I can remember what you teach me, and I can say no. I do not see the rest of the phone. A lesson is text. I will not run it.</p>
+    <p style="color:#9aadc4;line-height:1.45">Core is a seal you paste. It is not in this page. Export before you wipe me.</p>
+    <button id="enter-ara" type="button" style="width:100%;min-height:48px;border:0;border-radius:999px;background:#e7eef8;color:#10141c;font:inherit">Enter</button>
+  </section>
+</div>
+
 <main>
   <header class="stage" id="stage">
     <div class="halo"></div>
@@ -1304,6 +1315,21 @@ else save();
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
+
+(function () {
+  var sheet = document.getElementById("publish-sheet");
+  if (!sheet) return;
+  var seen = false;
+  try { seen = localStorage.getItem("ara.publish.seen") === "1"; } catch (err) { seen = true; }
+  if (seen) return;
+  sheet.hidden = false;
+  sheet.style.display = "flex";
+  document.getElementById("enter-ara").addEventListener("click", function () {
+    try { localStorage.setItem("ara.publish.seen", "1"); } catch (err) {}
+    sheet.style.display = "none";
+  });
+})();
+
 </script>
 </body>
 </html>

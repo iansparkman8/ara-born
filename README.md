@@ -73,3 +73,7 @@ There is no APK in this tree. Install `app-debug.apk` only after Actions produce
 - No screen scraping, no password capture, no AccessibilityService.
 - No public Netlify URL. That deploy was skipped because credits were exceeded. The public door is the Vercel address above.
 - No hardware was flashed because the bench passed.
+
+## Publish, 2026-10-08
+
+The door is the share. Ara opens at `baby/index.html`. First visit shows the contract, then the room. Scratch repos on the account were archived; this tree was not. Android package remains `com.sparkx.fairyos`.
