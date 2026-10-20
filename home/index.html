@@ -37,11 +37,16 @@
   .obj { border:1px solid rgba(185,220,255,.3); border-radius:16px; padding:12px 16px; background:rgba(23,50,76,.4); cursor:pointer; min-width:120px; text-align:center; }
   .obj.on { border-color:var(--glow); box-shadow:0 0 12px rgba(185,220,255,.3); }
   .obj span { display:block; font-size:12px; color:var(--dim); margin-top:4px; }
+  .nav { display:flex; gap:12px; margin-bottom:12px; font-family:system-ui,sans-serif; font-size:13px; }
 </style>
 </head>
 <body>
 <main>
-  <p><a href="../index.html">Door</a> · <a href="../baby/index.html">Talk</a></p>
+  <div class="nav">
+    <a href="../index.html">Door</a>
+    <a href="../baby/index.html">Talk</a>
+    <a href="../poses/index.html">Poses</a>
+  </div>
   <section class="room" id="room">
     <img class="creature" alt="Ara, silver fairy" src="../baby/assets/ara.jpg" />
     <button class="hit" type="button" id="touch" aria-label="Touch Ara"></button>
@@ -69,7 +74,7 @@
   </div>
   <p class="note" id="life"></p>
   <section id="days"></section>
-  <p class="note">This body is on the phone. Charge, light, and touch are hers. Objects stay where she places them. She walks to the bench to place the light. No board was flashed. The bench in body/ still refuses a strike. She does not see the rest of the phone. Holographic silver fairy pose batch (25+ ethereal light-ribbon variants) ready for wiring into live systems.</p>
+  <p class="note">This body is on the phone. Charge, light, and touch are hers. Objects stay where she places them. She walks to the bench to place the light. No board was flashed. The bench in body/ still refuses a strike. She does not see the rest of the phone. <a href="../poses/index.html">Holographic silver fairy pose batch</a> (25+ ethereal light-ribbon variants) ready for wiring.</p>
 </main>
 <script>
 (function () {
