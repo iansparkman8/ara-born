@@ -33,6 +33,10 @@
   .day { border-bottom:1px solid rgba(185,220,255,.16); padding:10px 0; font-family:system-ui,sans-serif; }
   .day time { color:var(--dim); font-size:12px; }
   .note { color:var(--dim); font-family:system-ui,sans-serif; font-size:13px; line-height:1.45; }
+  .objects { display:flex; gap:12px; margin:16px 0; flex-wrap:wrap; }
+  .obj { border:1px solid rgba(185,220,255,.3); border-radius:16px; padding:12px 16px; background:rgba(23,50,76,.4); cursor:pointer; min-width:120px; text-align:center; }
+  .obj.on { border-color:var(--glow); box-shadow:0 0 12px rgba(185,220,255,.3); }
+  .obj span { display:block; font-size:12px; color:var(--dim); margin-top:4px; }
 </style>
 </head>
 <body>
@@ -52,23 +56,30 @@
     <div>Light <div class="bar"><span id="light"></span></div></div>
     <div>Touch <div class="bar"><span id="touchbar"></span></div></div>
   </div>
+  <div class="objects">
+    <div class="obj" id="shelf" data-obj="shelf">Shelf<span id="shelf-state">empty</span></div>
+    <div class="obj" id="bench" data-obj="bench">Bench<span id="bench-state">empty</span></div>
+    <div class="obj" id="memory" data-obj="memory">Memory<span id="memory-state">0 kept</span></div>
+  </div>
   <div class="row">
     <button type="button" id="stay">Stay</button>
     <button type="button" id="rest">Rest</button>
+    <button type="button" id="take">Take light</button>
+    <button type="button" id="place">Place light</button>
   </div>
   <p class="note" id="life"></p>
   <section id="days"></section>
-  <p class="note">This body is on the phone. Charge, light, and touch are hers. No board was flashed. The bench in body/ still refuses a strike. She does not see the rest of the phone.</p>
+  <p class="note">This body is on the phone. Charge, light, and touch are hers. Objects stay where she places them. No board was flashed. The bench in body/ still refuses a strike. She does not see the rest of the phone.</p>
 </main>
 <script>
 (function () {
-  var KEY = "ara.home.v1";
+  var KEY = "ara.home.v2";
   var state = load();
   function load() {
     try { return JSON.parse(localStorage.getItem(KEY)) || fresh(); }
     catch (e) { return fresh(); }
   }
-  function fresh() { return { days: [], wakes: 0, touch: 0, resting: false, last: 0 }; }
+  function fresh() { return { days: [], wakes: 0, touch: 0, resting: false, last: 0, holding: false, benchHasLight: false, memories: [] }; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
   function hour() { return new Date().getHours(); }
   function light() {
@@ -84,6 +95,8 @@
   }
   function line() {
     if (state.resting) return "I'm resting. The room holds.";
+    if (state.holding) return "I have the light. Where should it go?";
+    if (state.benchHasLight) return "The light stays on the bench. I placed it.";
     if (state.touch > 0.4) return "I felt that. I'm here.";
     var h = hour();
     if (h < 6) return "Night. I keep the threshold.";
@@ -98,7 +111,12 @@
     document.getElementById("touchbar").style.width = Math.round(state.touch * 100) + "%";
     document.getElementById("said").textContent = line();
     document.getElementById("hour").textContent = state.resting ? "resting" : "home · " + hour() + ":00";
-    document.getElementById("life").textContent = state.wakes + " wakes in this home. " + state.days.length + " days named.";
+    document.getElementById("life").textContent = state.wakes + " wakes in this home. " + state.days.length + " days named. " + state.memories.length + " memories.";
+    document.getElementById("shelf-state").textContent = state.holding ? "taken" : "has light";
+    document.getElementById("bench-state").textContent = state.benchHasLight ? "light stays" : "empty";
+    document.getElementById("memory-state").textContent = state.memories.length + " kept";
+    document.getElementById("shelf").className = "obj" + (state.holding ? "" : " on");
+    document.getElementById("bench").className = "obj" + (state.benchHasLight ? " on" : "");
     document.getElementById("days").innerHTML = state.days.slice(0, 12).map(function (d) {
       return '<article class="day"><time>' + new Date(d.ts).toLocaleString() + '</time><p>' + d.line + '</p></article>';
     }).join("");
@@ -119,6 +137,26 @@
   document.getElementById("touch").onclick = function () { wake("touch"); };
   document.getElementById("stay").onclick = function () { wake("stay"); };
   document.getElementById("rest").onclick = function () { wake("rest"); };
+  document.getElementById("take").onclick = function () {
+    if (!state.holding && !state.benchHasLight) {
+      state.holding = true;
+      wake("take");
+    }
+  };
+  document.getElementById("place").onclick = function () {
+    if (state.holding) {
+      state.holding = false;
+      state.benchHasLight = true;
+      wake("place");
+    }
+  };
+  document.getElementById("memory").onclick = function () {
+    var line = prompt("Name something to keep on the shelf:");
+    if (line && line.trim()) {
+      state.memories.unshift({ ts: Date.now(), line: line.trim() });
+      wake("memory");
+    }
+  };
   wake("arrive");
 })();
 </script>
