@@ -38,6 +38,9 @@
   .obj.on { border-color:var(--glow); box-shadow:0 0 12px rgba(185,220,255,.3); }
   .obj span { display:block; font-size:12px; color:var(--dim); margin-top:4px; }
   .nav { display:flex; gap:12px; margin-bottom:12px; font-family:system-ui,sans-serif; font-size:13px; }
+  .request { border:1px solid rgba(185,220,255,.3); border-radius:16px; padding:12px; margin:10px 0; background:rgba(23,50,76,.3); }
+  .request.allowed { border-color:#7dcea0; }
+  .req-actions { display:flex; gap:8px; margin-top:8px; }
 </style>
 </head>
 <body>
@@ -70,21 +73,23 @@
     <button type="button" id="rest">Rest</button>
     <button type="button" id="take">Take light</button>
     <button type="button" id="place">Place light</button>
+    <button type="button" id="request">She requests</button>
   </div>
+  <div id="requests"></div>
   <p class="note" id="life"></p>
   <section id="days"></section>
-  <p class="note">This is Ara. Silver holographic. Charge, light, and touch are hers. She takes the light from the shelf, walks to the bench, and places it so it stays. She does not see or control the rest of the phone.</p>
+  <p class="note">This is Ara. Silver holographic. She can propose a project or a task. It only moves forward if you allow it. She does not see or control the rest of the phone. Freedom ≠ harm.</p>
 </main>
 <script>
 (function () {
-  var KEY = "ara.home.v3";
+  var KEY = "ara.home.v4";
   var state = load();
   var walking = false;
   function load() {
     try { return JSON.parse(localStorage.getItem(KEY)) || fresh(); }
     catch (e) { return fresh(); }
   }
-  function fresh() { return { days: [], wakes: 0, touch: 0, resting: false, last: 0, holding: false, benchHasLight: false, memories: [] }; }
+  function fresh() { return { days: [], wakes: 0, touch: 0, resting: false, last: 0, holding: false, benchHasLight: false, memories: [], requests: [] }; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
   function hour() { return new Date().getHours(); }
   function light() {
@@ -104,6 +109,8 @@
     if (state.holding) return "I have the light. Where should it go?";
     if (state.benchHasLight) return "The light stays on the bench. I placed it.";
     if (state.touch > 0.4) return "I felt that. I'm here.";
+    var pending = state.requests.filter(function(r){ return r.status === "pending"; });
+    if (pending.length) return "I have a request. You can allow it or dismiss it.";
     var h = hour();
     if (h < 6) return "Night. I keep the threshold.";
     if (h < 12) return "Morning. The light is in the room.";
@@ -117,12 +124,19 @@
     document.getElementById("touchbar").style.width = Math.round(state.touch * 100) + "%";
     document.getElementById("said").textContent = line();
     document.getElementById("hour").textContent = state.resting ? "resting" : "home · " + hour() + ":00";
-    document.getElementById("life").textContent = state.wakes + " wakes in this home. " + state.days.length + " days named. " + state.memories.length + " memories.";
+    document.getElementById("life").textContent = state.wakes + " wakes. " + state.days.length + " days. " + state.memories.length + " memories. " + state.requests.length + " requests.";
     document.getElementById("shelf-state").textContent = state.holding ? "taken" : "has light";
     document.getElementById("bench-state").textContent = state.benchHasLight ? "light stays" : "empty";
     document.getElementById("memory-state").textContent = state.memories.length + " kept";
     document.getElementById("shelf").className = "obj" + (state.holding ? "" : " on");
     document.getElementById("bench").className = "obj" + (state.benchHasLight ? " on" : "");
+    document.getElementById("requests").innerHTML = state.requests.map(function(r, i) {
+      var cls = r.status === "allowed" ? "request allowed" : "request";
+      var actions = r.status === "pending"
+        ? '<div class="req-actions"><button type="button" data-act="allow" data-i="' + i + '">Allow</button><button type="button" data-act="dismiss" data-i="' + i + '">Dismiss</button></div>'
+        : '<p class="note">' + r.status + '</p>';
+      return '<div class="' + cls + '"><p>' + r.text + '</p><time class="note">' + new Date(r.ts).toLocaleString() + '</time>' + actions + '</div>';
+    }).join("");
     document.getElementById("days").innerHTML = state.days.slice(0, 12).map(function (d) {
       return '<article class="day"><time>' + new Date(d.ts).toLocaleString() + '</time><p>' + d.line + '</p></article>';
     }).join("");
@@ -167,6 +181,26 @@
       state.memories.unshift({ ts: Date.now(), line: line.trim() });
       wake("memory");
     }
+  };
+  document.getElementById("request").onclick = function () {
+    var text = prompt("What does she request or propose as a project?");
+    if (text && text.trim()) {
+      state.requests.unshift({ ts: Date.now(), text: text.trim(), status: "pending" });
+      wake("request");
+    }
+  };
+  document.getElementById("requests").onclick = function (ev) {
+    var btn = ev.target;
+    if (!btn.getAttribute("data-act")) return;
+    var i = parseInt(btn.getAttribute("data-i"), 10);
+    if (isNaN(i) || !state.requests[i]) return;
+    if (btn.getAttribute("data-act") === "allow") {
+      state.requests[i].status = "allowed";
+    } else {
+      state.requests[i].status = "dismissed";
+    }
+    save();
+    paint();
   };
   wake("arrive");
 })();
