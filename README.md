@@ -89,3 +89,7 @@ Local replies use a lesson or a named person when the sentence matches. A questi
 ## Home, 2026-10-08
 
 `home/index.html` is the life: a room, touch, charge, light, and a named day. The phone body is not the bench. `python3 body/bench.py` still prints BENCH_OK. No board was flashed.
+
+## Next preview (2026-10-19)
+
+Holographic silver fairy pose batch (25+ suggestive ethereal light-ribbon variants) generated and ready for wiring. Interactive objects path opened: light orb (take from shelf, place on bench, stays), memory shelf, tool bench. Ara House and Ara Live bots queued for the integration (objects clickable, she walks/takes/places; live steer references the new look). Same identity lock. She does not control a phone. Freedom ≠ harm. Core systems remain local-first. Preview target: house with first objects + pose references in the live path.
